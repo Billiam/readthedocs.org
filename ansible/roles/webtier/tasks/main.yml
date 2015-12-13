@@ -6,16 +6,25 @@
     - libxml2-dev
     - libxslt1-dev
     - zlib1g-dev
+    - texlive-full
 
 - name: Install python dependencies
-  pip: requirements={{application_path}}/requirements.txt
+  pip: requirements={{application_path}}/requirements.txt virtualenv={{application_venv}}
+  become: yes
+  become_user: vagrant
 
 - name: Create and migrate database
-  django_manage: command=migrate app_path={{application_path}}
+  django_manage: command=migrate app_path={{application_path}} virtualenv={{application_venv}}
+  become: yes
+  become_user: vagrant
 
 - name: Create a superuser once
-  shell: "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('{{django_admin_username}}', '{{django_admin_email}}', '{{django_admin_password}}')\" | python {{application_path}}/manage.py shell"
+  shell: "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('{{django_admin_username}}', '{{django_admin_email}}', '{{django_admin_password}}')\" | {{application_venv}}/bin/python {{application_path}}/manage.py shell"
   when: django_create_admin
+  become: yes
+  become_user: vagrant
 
 - name: Load test data
-  django_manage: command="loaddata test_data" app_path={{application_path}}
+  django_manage: command="loaddata test_data" app_path={{application_path}} virtualenv={{application_venv}}
+  become: yes
+  become_user: vagrant
